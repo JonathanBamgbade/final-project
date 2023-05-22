@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Banking</title>
+        <link rel="stylesheet" href="bank_account_styles.css" />
+        <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.4.1/firebase-firestore.js"></script>
+    </head>
+
+    <body>
+        <div class="top-bar">
+            <div class="nav-buttons">
+                <a href="homepage.html">
+                    <button type="submit" id="home-button">Home</button>
+                </a>
+                <a href="index.html">
+                    <button type="submit" id="logout-button">Logout</button>
+                </a>
+            </div>
+            <div class="group">
+                <label class="label">Username</label>
+                <input
+                    type="text"
+                    id="account-holder"
+                    class="input"
+                    value="John Doe"
+                    readonly
+                />
+            </div>
+        </div>
+    
+        <div class="account-wrap">
+            <div class="account-details">
+                <div class="group">
+                    <label class="label">Balance</label>
+                    <span id="total-balance">0.00</span>
+                </div>
+                <div class="group">
+                    <label class="label">Deposit</label>
+                    <input type="text" id="deposit" class="input" />
+                    <button type="submit" id="depositbutt">Deposit</button>
+                </div>
+                <div class="group">
+                    <label class="label">Withdraw</label>
+                    <input type="text" id="withdraw" class="input" />
+                    <button type="submit" id="withdrawbutt">Withdraw</button>
+                </div>
+            </div>
+
+            <div id="crypto">
+                <div class="crypto-container">
+                    <p>Bitcoin: <span id="bitcoin-balance"></span> BTC</p>
+                    <button id="buy-bitcoin">Buy More Bitcoin</button>
+                    <input type="number" id="buy-bitcoin-field" required />
+                    <button id="sell-bitcoin">Sell Bitcoin</button>
+                    <input type="number" id="sell-bitcoin-field" required />
+                </div>
+                <div class="crypto-container">
+                    <p>Ethereum: <span id="ethereum-balance"></span> ETH</p>
+                    <button id="buy-ethereum">Buy More Ethereum</button>
+                    <input type="number" id="buy-ethereum-field" required />
+                    <button id="sell-ethereum">Sell Ethereum</button>
+                    <input type="number" id="sell-ethereum-field" required />
+                </div>
+                <div class="crypto-container">
+                    <p>Litecoin: <span id="litecoin-balance"></span> LTC</p>
+                    <button id="buy-litecoin">Buy More Litecoin</button>
+                    <input type="number" id="buy-litecoin-field" required />
+                    <button id="sell-litecoin">Sell Litecoin</button>
+                    <input type="number" id="sell-litecoin-field" required />
+                </div>
+                <div class="crypto-container">
+                    <p>Ripple: <span id="ripple-balance"></span> XRP</p>
+                    <button id="buy-ripple">Buy More Ripple</button>
+                    <input type="number" id="buy-ripple-field" required />
+                    <button id="sell-ripple">Sell Ripple</button>
+                    <input type="number" id="sell-ripple-field" required />
+                </div>
+                
+            </div>
+        </div>
+    
+
+        <script>
+            const urlParams = new URLSearchParams(window.location.search);
+            const email = decodeURIComponent(urlParams.get("email"));
+
+            const accountHolderField = document.querySelector(
+                'input[value="John Doe"]'
+            );
+            if (accountHolderField) {
+                accountHolderField.value = email;
+            } else {
+                console.error("Account holder field not found!");
+            }
+        </script>
+
+        <script>
+            var firebaseConfig = {
+                apiKey: "AIzaSyCEGFJ9QbFc7IbMA7mTYcl1xB99mPHnKUg",
+                authDomain: "project-3d2f1.firebaseapp.com",
+                databaseURL:
+                    "https://final-project2-e3577-default-rtdb.firebaseio.com",
+                projectId: "project-3d2f1",
+                storageBucket: "project-3d2f1.appspot.com",
+                messagingSenderId: "899440797226",
+                appId: "1:899440797226:web:6ab72b958ba94b26ce8553",
+            };
+
+            // Initialize Firebase
+            firebase.initializeApp(firebaseConfig);
+            var db = firebase.firestore();
+
+            // Fetch initial account balance from Firestore
+            var accountBalance = 0;
+            var accountRef = db.collection("accounts").doc("1234567890");
+            accountRef.get().then((doc) => {
+                if (doc.exists) {
+                    accountBalance = doc.data().balance;
+                    document.getElementById("total-balance").innerText =
+                        accountBalance;
+                }
+            });
+
+            document
+                .getElementById("depositbutt")
+                .addEventListener("click", function () {
+                    var depositAmount = parseFloat(
+                        document.getElementById("deposit").value
+                    );
+
+                    accountBalance += depositAmount;
+                    document.getElementById("total-balance").innerText =
+                        accountBalance;
+
+                    // update balance in Firestore
+                    accountRef.update({ balance: accountBalance });
+
+                    // log transaction in Firestore
+                    db.collection("transactions")
+                        .add({
+                            accountHolder: "account-holder",
+                            action: "deposit",
+                            amount: depositAmount,
+                            date: firebase.firestore.FieldValue.serverTimestamp(),
+                        })
+                        .then(function (docRef) {
+                            console.log(
+                                "Document written with ID: ",
+                                docRef.id
+                            );
+                        })
+                        .catch(function (error) {
+                            console.error("Error adding document: ", error);
+                        });
+                });
+
+            document
+                .getElementById("withdrawbutt")
+                .addEventListener("click", function () {
+                    var withdrawAmount = parseFloat(
+                        document.getElementById("withdraw").value
+                    );
+
+                    if (withdrawAmount > accountBalance) {
+                        alert("You don't have enough funds!");
+                        return;
+                    }
+
+                    accountBalance -= withdrawAmount;
+                    document.getElementById("total-balance").innerText =
+                        accountBalance;
+
+                    // update balance in Firestore
+                    accountRef.update({ balance: accountBalance });
+
+                    // log transaction in Firestore
+                    db.collection("transactions")
+                        .add({
+                            accountHolder: "account-holder",
+                            action: "withdraw",
+                            amount: withdrawAmount,
+                            date: firebase.firestore.FieldValue.serverTimestamp(),
+                        })
+                        .then(function (docRef) {
+                            console.log(
+                                "Document written with ID: ",
+                                docRef.id
+                            );
+                        })
+                        .catch(function (error) {
+                            console.error("Error adding document: ", error);
+                        });
+                });
+        </script>
+    </body>
+</html>

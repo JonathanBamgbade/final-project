@@ -1,0 +1,57 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header {
+  background-color: #494545;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  position: sticky;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+header .logo {
+  font-size: 1.5rem;
+  color: #FDB913;
+}
+
+nav ul {
+  display: flex;
+}
+
+nav ul li {
+  list-style: none;
+}
+
+nav ul li a {
+  color: #139ffd;
+  display: block;
+  padding: 0 1rem;
+  text-decoration: none;
+}
+
+nav ul li a:hover {
+  color: #FFFFFF;
+}
+
+
+section {
+  padding: 3rem;
+}
+
+
+
+
+
